@@ -3,9 +3,22 @@ import '../styles/main.css';
 import { formatedPrice } from './utils/helpers';
 
 const productList = document.querySelector('.productWrap');
+const productSelector = document.querySelector('.productSelect');
+let productStore = [];
 
 async function init() {
   await getProductList();
+
+  productSelector.addEventListener('change', e => {
+    const category = e.target.value;
+
+    const filteredProducts = productStore.filter(p => {
+      if (category === '全部') return productStore;
+      return p.category === category;
+    });
+
+    renderProductList(filteredProducts);
+  });
 }
 
 await init();
@@ -15,7 +28,9 @@ async function getProductList() {
     const res = await axios.get(
       `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/products`,
     );
-    renderProductList(res.data.products);
+
+    productStore = res.data.products;
+    renderProductList(productStore);
   } catch (error) {
     console.log(error);
     alert(error.response);
