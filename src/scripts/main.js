@@ -5,6 +5,7 @@ import { formatedPrice } from './utils/helpers';
 const productList = document.querySelector('.productWrap');
 const productSelector = document.querySelector('.productSelect');
 let productStore = [];
+let cartsStore = [];
 
 async function init() {
   await getProductList();
@@ -19,6 +20,8 @@ async function init() {
 
     renderProductList(filteredProducts);
   });
+
+  await getCarts();
 }
 
 await init();
@@ -55,4 +58,19 @@ function renderProductList(products) {
   });
 
   productList.innerHTML = contents;
+}
+
+async function getCarts() {
+  try {
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts`,
+    );
+
+    const { carts, finalTotal } = res.data;
+    cartsStore = carts;
+  } catch (error) {
+    console.log(error);
+    alert(error.response.data.message);
+    return;
+  }
 }
