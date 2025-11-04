@@ -13,6 +13,15 @@ let cartsStore = [];
 async function init() {
   await getProductList();
 
+  productList.addEventListener('click', async e => {
+    if (!e.target.dataset.id) {
+      return;
+    }
+
+    e.preventDefault();
+    await addToCarts(e.target.dataset.id);
+  });
+
   productSelector.addEventListener('change', e => {
     const category = e.target.value;
 
@@ -58,7 +67,7 @@ function renderProductList(products) {
                      src="${p.images}"
                      alt=""
                    />
-                   <a href="#" class="addCardBtn">加入購物車</a>
+                   <a href="#" class="addCardBtn" data-id="${p.id}">加入購物車</a>
                    <h3>${p.title}</h3>
                    <del class="originPrice">NT${formatedPrice(p.origin_price)}</del>
                    <p class="nowPrice">NT${formatedPrice(p.price)}</p>
@@ -82,6 +91,40 @@ async function getCarts() {
     console.log(error);
     alert(error.response.data.message);
     return;
+  }
+}
+
+async function addToCarts(productId) {
+  try {
+    let quantity = 1;
+    cartsStore.forEach(item => {
+      if (item.product.id === productId) {
+        quantity = item.quantity + 1;
+      }
+    });
+
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts`,
+      {
+        data: {
+          productId,
+          quantity,
+        },
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
+    const { carts, finalTotal } = res.data;
+    cartsStore = res.data.carts;
+    renderCarts(carts);
+    renderTotalPrice(finalTotal);
+  } catch (error) {
+    console.log(error);
+    alert(error.response.data.message);
   }
 }
 
