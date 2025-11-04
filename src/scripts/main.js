@@ -6,6 +6,7 @@ const productList = document.querySelector('.productWrap');
 const productSelector = document.querySelector('.productSelect');
 const tableBody = document.querySelector('.shoppingCart-tableBody');
 const totalPrice = document.getElementById('totalPrice');
+const discardAllBtn = document.querySelector('.discardAllBtn');
 let productStore = [];
 let cartsStore = [];
 
@@ -24,6 +25,11 @@ async function init() {
   });
 
   await getCarts();
+
+  discardAllBtn.addEventListener('click', async e => {
+    e.preventDefault();
+    await removeAllFromCarts();
+  });
 }
 
 await init();
@@ -74,6 +80,20 @@ async function getCarts() {
     console.log(error);
     alert(error.response.data.message);
     return;
+  }
+}
+
+async function removeAllFromCarts() {
+  try {
+    const res = await axios.delete(
+      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts`,
+    );
+
+    const { carts, finalTotal } = res.data;
+    renderCarts(carts);
+    renderTotalPrice(finalTotal);
+  } catch (error) {
+    alert(error.response.data.message);
   }
 }
 
