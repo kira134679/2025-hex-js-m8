@@ -35,6 +35,15 @@ async function init() {
 
   await getCarts();
 
+  tableBody.addEventListener('click', async e => {
+    if (!e.target.dataset.cartId) {
+      return;
+    }
+
+    e.preventDefault();
+    await removeFromCarts(e.target.dataset.cartId);
+  });
+
   discardAllBtn.addEventListener('click', async e => {
     e.preventDefault();
     await removeAllFromCarts();
@@ -128,6 +137,20 @@ async function addToCarts(productId) {
   }
 }
 
+async function removeFromCarts(cartId) {
+  try {
+    const res = await axios.delete(
+      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts/${cartId}`,
+    );
+
+    const { carts, finalTotal } = res.data;
+    renderCarts(carts);
+    renderTotalPrice(finalTotal);
+  } catch (error) {
+    alert(error.response.data.message);
+  }
+}
+
 async function removeAllFromCarts() {
   try {
     const res = await axios.delete(
@@ -160,7 +183,7 @@ function renderCarts(carts) {
                      <td>${item.quantity}</td>
                      <td>NT${formatedPrice(item.product.price * item.quantity)}</td>
                      <td class="discardBtn">
-                       <a href="#" class="material-icons"> clear </a>
+                       <a href="#" class="material-icons" data-cart-id="${item.id}"> clear </a>
                      </td>
                    </tr>`;
     });
