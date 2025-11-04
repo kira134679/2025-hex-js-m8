@@ -76,6 +76,8 @@ async function getCarts() {
 
     const { carts, finalTotal } = res.data;
     cartsStore = carts;
+    renderCarts(cartsStore);
+    renderTotalPrice(finalTotal);
   } catch (error) {
     console.log(error);
     alert(error.response.data.message);
