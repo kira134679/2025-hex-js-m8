@@ -4,6 +4,8 @@ import { formatedPrice } from './utils/helpers';
 
 const productList = document.querySelector('.productWrap');
 const productSelector = document.querySelector('.productSelect');
+const tableBody = document.querySelector('.shoppingCart-tableBody');
+const totalPrice = document.getElementById('totalPrice');
 let productStore = [];
 let cartsStore = [];
 
@@ -73,4 +75,35 @@ async function getCarts() {
     alert(error.response.data.message);
     return;
   }
+}
+
+function renderCarts(carts) {
+  let contents = '';
+
+  if (carts.length === 0) {
+    contents = '目前購物車沒有商品';
+  } else {
+    carts.forEach(item => {
+      contents += `<tr>
+                     <td>
+                       <div class="cardItem-title">
+                         <img src="${item.product.images}" alt="" />
+                         <p>${item.product.title}</p>
+                       </div>
+                     </td>
+                     <td>NT${formatedPrice(item.product.price)}</td>
+                     <td>${item.quantity}</td>
+                     <td>NT${formatedPrice(item.product.price * item.quantity)}</td>
+                     <td class="discardBtn">
+                       <a href="#" class="material-icons"> clear </a>
+                     </td>
+                   </tr>`;
+    });
+  }
+
+  tableBody.innerHTML = contents;
+}
+
+function renderTotalPrice(price) {
+  totalPrice.textContent = formatedPrice(price);
 }
