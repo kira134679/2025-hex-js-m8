@@ -195,3 +195,62 @@ function renderCarts(carts) {
 function renderTotalPrice(price) {
   totalPrice.textContent = formatedPrice(price);
 }
+
+const orderInfoBtn = document.querySelector('.orderInfo-btn');
+
+orderInfoBtn.addEventListener('click', async e => {
+  e.preventDefault();
+  if (cartsStore.length === 0) {
+    alert('請加入商品到購物車~');
+    return;
+  }
+
+  const customerName = document.getElementById('customerName').value;
+  const customerPhone = document.getElementById('customerPhone').value;
+  const customerEmail = document.getElementById('customerEmail').value;
+  const customerAddress = document.getElementById('customerAddress').value;
+  const tradeWay = document.getElementById('tradeWay').value;
+
+  const inputFields = [customerName, customerPhone, customerEmail, customerAddress, tradeWay];
+
+  if (inputFields.some(field => !field || field.trim() === '')) {
+    alert('請填寫預訂資料');
+    return;
+  }
+
+  const userInfo = {
+    name: customerName,
+    tel: customerPhone,
+    email: customerEmail,
+    address: customerAddress,
+    payment: tradeWay,
+  };
+
+  try {
+    await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/orders`,
+      {
+        data: {
+          user: userInfo,
+        },
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
+    document.getElementById('customerName').value = '';
+    document.getElementById('customerPhone').value = '';
+    document.getElementById('customerEmail').value = '';
+    document.getElementById('customerAddress').value = '';
+    document.getElementById('tradeWay').value = 'ATM';
+
+    cartsStore = [];
+    renderCarts(cartsStore);
+    renderTotalPrice(0);
+  } catch (error) {
+    alert(error.response.data.message);
+  }
+});
