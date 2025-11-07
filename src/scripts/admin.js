@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { timestampToDate } from './utils/helpers';
 import '../styles/admin.css';
 
 // C3.js
@@ -54,7 +55,7 @@ async function getOrderList() {
                        <td>${order.user.address}</td>
                        <td>${order.user.email}</td>
                        <td>${productContents}</td>
-                       <td>${order.createdAt}</td>
+                       <td>${timestampToDate(order.createdAt)}</td>
                        <td class="orderStatus">
                          <a href="#">${order.paid ? '已處理' : '未處理'}</a>
                        </td>
