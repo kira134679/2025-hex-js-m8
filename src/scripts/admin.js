@@ -51,33 +51,36 @@ async function getOrderList() {
   }
 }
 
-function renderOrderList() {
+function renderOrderList(orders) {
   let contents = '';
+  if (orders.length === 0) {
+    contents = '目前沒有訂單';
+  } else {
+    contents = orders
+      .map(order => {
+        const { products } = order;
+        const productContents = products.map(p => `<p>${p.title} x ${p.quantity}</p>`).join('');
 
-  orders.forEach(order => {
-    let productContents = '';
-    order.products.forEach(p => {
-      productContents += `<p>${p.title} x ${p.quantity}</p>`;
-    });
-
-    contents += `<tr>
-                     <td>${order.id}</td>
-                       <td>
-                         <p>${order.user.name}</p>
-                         <p>${order.user.tel}</p>
-                       </td>
-                       <td>${order.user.address}</td>
-                       <td>${order.user.email}</td>
-                       <td>${productContents}</td>
-                       <td>${timestampToDate(order.createdAt)}</td>
-                       <td class="orderStatus">
-                         <a href="#">${order.paid ? '已處理' : '未處理'}</a>
-                       </td>
-                       <td>
-                         <input type="button" class="delSingleOrder-Btn" value="刪除" />
-                       </td>
-                     </tr>`;
-  });
+        return `<tr>
+              <td>${order.id}</td>
+              <td>
+                <p>${order.user.name}</p>
+                <p>${order.user.tel}</p>
+              </td>
+              <td>${order.user.address}</td>
+              <td>${order.user.email}</td>
+              <td>${productContents}</td>
+              <td>${timestampToDate(order.createdAt)}</td>
+              <td class="orderStatus">
+                <a href="#">${order.paid ? '已處理' : '未處理'}</a>
+              </td>
+              <td>
+                <input type="button" class="delSingleOrder-Btn" value="刪除" />
+              </td>
+            </tr>`;
+      })
+      .join('');
+  }
 
   orderTableBody.innerHTML = contents;
 }
