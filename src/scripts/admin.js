@@ -24,6 +24,12 @@ const chart = c3.generate({
 
 const orderTableBody = document.querySelector('.orderPage-tableBody');
 
+await init();
+
+async function init() {
+  await getOrderList();
+}
+
 async function getOrderList() {
   try {
     const res = await axios.get(
@@ -70,5 +76,3 @@ async function getOrderList() {
     alert(error.response.data.message);
   }
 }
-
-await getOrderList();
