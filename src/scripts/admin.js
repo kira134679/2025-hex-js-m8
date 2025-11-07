@@ -1,6 +1,8 @@
+import axios from 'axios';
 import '../styles/admin.css';
+
 // C3.js
-let chart = c3.generate({
+const chart = c3.generate({
   bindto: '#chart', // HTML 元素綁定
   data: {
     type: 'pie',
@@ -18,3 +20,54 @@ let chart = c3.generate({
     },
   },
 });
+
+const orderTableBody = document.querySelector('.orderPage-tableBody');
+
+async function getOrderList() {
+  try {
+    const res = await axios.get(
+      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: import.meta.env.VITE_TOKEN,
+        },
+      },
+    );
+
+    const { orders } = res.data;
+
+    let contents = '';
+
+    orders.forEach(order => {
+      let productContents = '';
+      order.products.forEach(p => {
+        productContents += `<p>${p.title} x ${p.quantity}</p>`;
+      });
+
+      contents += `<tr>
+                     <td>${order.id}</td>
+                       <td>
+                         <p>${order.user.name}</p>
+                         <p>${order.user.tel}</p>
+                       </td>
+                       <td>${order.user.address}</td>
+                       <td>${order.user.email}</td>
+                       <td>${productContents}</td>
+                       <td>${order.createdAt}</td>
+                       <td class="orderStatus">
+                         <a href="#">${order.paid ? '已處理' : '未處理'}</a>
+                       </td>
+                       <td>
+                         <input type="button" class="delSingleOrder-Btn" value="刪除" />
+                       </td>
+                     </tr>`;
+    });
+
+    orderTableBody.innerHTML = contents;
+  } catch (error) {
+    alert(error.response.data.message);
+  }
+}
+
+await getOrderList();
