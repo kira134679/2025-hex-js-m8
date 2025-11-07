@@ -23,11 +23,13 @@ const chart = c3.generate({
 });
 
 const orderTableBody = document.querySelector('.orderPage-tableBody');
+let orderData = [];
 
 await init();
 
 async function init() {
   await getOrderList();
+  renderOrderList(orderData);
 }
 
 async function getOrderList() {
@@ -43,16 +45,22 @@ async function getOrderList() {
     );
 
     const { orders } = res.data;
+    orderData = orders;
+  } catch (error) {
+    alert(error.response.data.message);
+  }
+}
 
-    let contents = '';
+function renderOrderList() {
+  let contents = '';
 
-    orders.forEach(order => {
-      let productContents = '';
-      order.products.forEach(p => {
-        productContents += `<p>${p.title} x ${p.quantity}</p>`;
-      });
+  orders.forEach(order => {
+    let productContents = '';
+    order.products.forEach(p => {
+      productContents += `<p>${p.title} x ${p.quantity}</p>`;
+    });
 
-      contents += `<tr>
+    contents += `<tr>
                      <td>${order.id}</td>
                        <td>
                          <p>${order.user.name}</p>
@@ -69,10 +77,7 @@ async function getOrderList() {
                          <input type="button" class="delSingleOrder-Btn" value="刪除" />
                        </td>
                      </tr>`;
-    });
+  });
 
-    orderTableBody.innerHTML = contents;
-  } catch (error) {
-    alert(error.response.data.message);
-  }
+  orderTableBody.innerHTML = contents;
 }
