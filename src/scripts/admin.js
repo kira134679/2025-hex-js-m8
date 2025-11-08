@@ -30,6 +30,28 @@ await init();
 async function init() {
   await getOrderList();
   renderOrderList(orderData);
+
+  orderTableBody.addEventListener('click', async e => {
+    e.preventDefault();
+    const target = e.target;
+    const className = target.getAttribute('class');
+    if (className === 'orderStatus-Btn') {
+      const { id, status } = target.dataset;
+
+      const newStatus = !(status === 'true');
+
+      await changeOrderStatus(id, newStatus);
+      renderOrderList(orderData);
+      return;
+    }
+
+    if (className === 'delSingleOrder-Btn') {
+      renderOrderList(orderData);
+      return;
+    }
+
+    return;
+  });
 }
 
 async function getOrderList() {
@@ -72,7 +94,7 @@ function renderOrderList(orders) {
               <td>${productContents}</td>
               <td>${timestampToDate(order.createdAt)}</td>
               <td class="orderStatus">
-                <a href="#">${order.paid ? '已處理' : '未處理'}</a>
+                <a href="#" class="orderStatus-Btn" data-id="${order.id}" data-status="${order.paid}">${order.paid ? '已處理' : '未處理'}</a>
               </td>
               <td>
                 <input type="button" class="delSingleOrder-Btn" value="刪除" />
@@ -83,4 +105,29 @@ function renderOrderList(orders) {
   }
 
   orderTableBody.innerHTML = contents;
+}
+
+async function changeOrderStatus(orderId, orderStatus) {
+  try {
+    const res = await axios.put(
+      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`,
+      {
+        data: {
+          id: orderId,
+          paid: orderStatus,
+        },
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: import.meta.env.VITE_TOKEN,
+        },
+      },
+    );
+
+    const { orders } = res.data;
+    orderData = orders;
+  } catch (error) {
+    alert(error.response.data.message);
+  }
 }
