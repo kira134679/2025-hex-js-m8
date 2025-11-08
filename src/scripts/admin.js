@@ -46,6 +46,8 @@ async function init() {
     }
 
     if (className === 'delSingleOrder-Btn') {
+      const { id } = target.dataset;
+      await deleteOrder(id);
       renderOrderList(orderData);
       return;
     }
@@ -97,7 +99,7 @@ function renderOrderList(orders) {
                 <a href="#" class="orderStatus-Btn" data-id="${order.id}" data-status="${order.paid}">${order.paid ? '已處理' : '未處理'}</a>
               </td>
               <td>
-                <input type="button" class="delSingleOrder-Btn" value="刪除" />
+                <input type="button" class="delSingleOrder-Btn" value="刪除" data-id="${order.id}" />
               </td>
             </tr>`;
       })
@@ -117,6 +119,25 @@ async function changeOrderStatus(orderId, orderStatus) {
           paid: orderStatus,
         },
       },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: import.meta.env.VITE_TOKEN,
+        },
+      },
+    );
+
+    const { orders } = res.data;
+    orderData = orders;
+  } catch (error) {
+    alert(error.response.data.message);
+  }
+}
+
+async function deleteOrder(orderId) {
+  try {
+    const res = await axios.delete(
+      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders/${orderId}`,
       {
         headers: {
           'Content-Type': 'application/json',
