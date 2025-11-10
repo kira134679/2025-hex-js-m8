@@ -2,34 +2,17 @@ import axios from 'axios';
 import { timestampToDate } from './utils/helpers';
 import '../styles/admin.css';
 
-// C3.js
-const chart = c3.generate({
-  bindto: '#chart', // HTML 元素綁定
-  data: {
-    type: 'pie',
-    columns: [
-      ['Louvre 雙人床架', 1],
-      ['Antony 雙人床架', 2],
-      ['Anty 雙人床架', 3],
-      ['其他', 4],
-    ],
-    colors: {
-      'Louvre 雙人床架': '#DACBFF',
-      'Antony 雙人床架': '#9D7FEA',
-      'Anty 雙人床架': '#5434A7',
-      其他: '#301E5F',
-    },
-  },
-});
-
 const orderTableBody = document.querySelector('.orderPage-tableBody');
 let orderData = [];
+let share = [];
 
 await init();
 
 async function init() {
   await getOrderList();
   renderOrderList(orderData);
+  share = getRevenueShare();
+  renderChart(share);
 
   orderTableBody.addEventListener('click', async e => {
     e.preventDefault();
@@ -49,6 +32,8 @@ async function init() {
       const { id } = target.dataset;
       await deleteOrder(id);
       renderOrderList(orderData);
+      share = getRevenueShare();
+      renderChart(share);
       return;
     }
 
@@ -151,4 +136,50 @@ async function deleteOrder(orderId) {
   } catch (error) {
     alert(error.response.data.message);
   }
+}
+
+function getRevenueShare() {
+  const products = orderData.flatMap(o => o.products);
+
+  const map = new Map();
+  for (const p of products) {
+    if (!map.get(p.id)) {
+      map.set(p.id, { category: p.category, title: p.title, totalPrice: p.price * p.quantity });
+      continue;
+    }
+    const { category, title, totalPrice } = map.get(p.id);
+    const newPrice = totalPrice + p.price * p.quantity;
+    map.set(p.id, { category, title, totalPrice: newPrice });
+  }
+  return [...map.values()];
+}
+
+function renderChart(data) {
+  let columnData = [];
+  const sortedData = [...data].sort((a, b) => b.totalPrice - a.totalPrice);
+
+  if (sortedData.length <= 3) {
+    columnData = sortedData;
+  } else {
+    const [top1, top2, top3, ...others] = sortedData;
+    const othersTotalPrice = others.reduce((accumulator, currentValue) => accumulator + currentValue.totalPrice, 0);
+    columnData = [top1, top2, top3, { title: '其他', totalPrice: othersTotalPrice }];
+  }
+
+  const colorArr = ['#DACBFF', '#9D7FEA', '#5434A7', '#301E5F'];
+  const colorData = {};
+  columnData.forEach((v, i) => {
+    colorData[v.title] = colorArr[i];
+  });
+
+  const chartData = {
+    bindto: '#chart', // HTML 元素綁定
+    data: {
+      type: 'pie',
+      columns: columnData.map(item => [item.title, item.totalPrice]),
+      colors: colorData,
+    },
+  };
+
+  c3.generate(chartData);
 }
