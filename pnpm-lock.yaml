@@ -11,6 +11,9 @@ importers:
       axios:
         specifier: ^1.13.1
         version: 1.13.1
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@biomejs/biome':
         specifier: 2.3.2
@@ -532,6 +535,9 @@ packages:
       yaml:
         optional: true
 
+  zod@4.1.12:
+    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
+
 snapshots:
 
   '@biomejs/biome@2.3.2':
@@ -904,3 +910,5 @@ snapshots:
       tinyglobby: 0.2.15
     optionalDependencies:
       fsevents: 2.3.3
+
+  zod@4.1.12: {}
