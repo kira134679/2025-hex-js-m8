@@ -3,6 +3,7 @@ import { timestampToDate } from './utils/helpers';
 import '../styles/admin.css';
 
 const orderTableBody = document.querySelector('.orderPage-tableBody');
+const discardAllBtn = document.querySelector('.discardAllBtn');
 let orderData = [];
 let share = [];
 
@@ -38,6 +39,14 @@ async function init() {
     }
 
     return;
+  });
+
+  discardAllBtn.addEventListener('click', async e => {
+    e.preventDefault();
+    await deleteAllOrders();
+    renderOrderList(orderData);
+    share = getRevenueShare();
+    renderChart(share);
   });
 }
 
@@ -123,6 +132,25 @@ async function deleteOrder(orderId) {
   try {
     const res = await axios.delete(
       `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders/${orderId}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: import.meta.env.VITE_TOKEN,
+        },
+      },
+    );
+
+    const { orders } = res.data;
+    orderData = orders;
+  } catch (error) {
+    alert(error.response.data.message);
+  }
+}
+
+async function deleteAllOrders() {
+  try {
+    const res = await axios.delete(
+      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`,
       {
         headers: {
           'Content-Type': 'application/json',
