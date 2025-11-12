@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as z from 'zod';
 import '../styles/main.css';
 import { formatedPrice } from './utils/helpers';
 
@@ -7,6 +8,7 @@ const productSelector = document.querySelector('.productSelect');
 const tableBody = document.querySelector('.shoppingCart-tableBody');
 const totalPrice = document.getElementById('totalPrice');
 const discardAllBtn = document.querySelector('.discardAllBtn');
+const orderInfoBtn = document.querySelector('.orderInfo-btn');
 let productStore = [];
 let cartsStore = [];
 
@@ -196,10 +198,40 @@ function renderTotalPrice(price) {
   totalPrice.textContent = formatedPrice(price);
 }
 
-const orderInfoBtn = document.querySelector('.orderInfo-btn');
+const schema = z.object({
+  name: z.string().trim().min(1, { error: '必填' }),
+  tel: z.string().refine(val => /^\d{2}-\d{8}$/.test(val), {
+    message: '電話格式錯誤',
+  }),
+  email: z.email({ error: 'Email格式錯誤' }).trim(),
+  address: z.string().trim().min(1, { error: '必填' }),
+  payment: z.literal(['ATM', '信用卡', '超商付款']),
+});
+
+// 清除錯誤訊息
+function clearErrorMessages() {
+  const errorMessages = document.querySelectorAll('.orderInfo-message');
+  errorMessages.forEach(msg => {
+    msg.textContent = '';
+  });
+}
+
+// 顯示錯誤訊息
+function showErrorMessages(errors) {
+  errors.forEach(error => {
+    const messageElement = document.querySelector(`[data-message="${error.path[0]}"]`);
+    if (messageElement) {
+      messageElement.textContent = error.message;
+    }
+  });
+}
 
 orderInfoBtn.addEventListener('click', async e => {
   e.preventDefault();
+
+  // 清除舊的錯誤訊息
+  clearErrorMessages();
+
   if (cartsStore.length === 0) {
     alert('請加入商品到購物車~');
     return;
@@ -211,13 +243,6 @@ orderInfoBtn.addEventListener('click', async e => {
   const customerAddress = document.getElementById('customerAddress').value;
   const tradeWay = document.getElementById('tradeWay').value;
 
-  const inputFields = [customerName, customerPhone, customerEmail, customerAddress, tradeWay];
-
-  if (inputFields.some(field => !field || field.trim() === '')) {
-    alert('請填寫預訂資料');
-    return;
-  }
-
   const userInfo = {
     name: customerName,
     tel: customerPhone,
@@ -225,6 +250,19 @@ orderInfoBtn.addEventListener('click', async e => {
     address: customerAddress,
     payment: tradeWay,
   };
+
+  try {
+    schema.parse(userInfo);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      showErrorMessages(error.issues);
+      return;
+    } else {
+      // unexpected error
+      alert(error);
+      return;
+    }
+  }
 
   try {
     await axios.post(
