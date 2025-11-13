@@ -6,11 +6,6 @@ import { formatedPrice } from './utils/helpers';
 axios.defaults.baseURL = `${import.meta.env.VITE_API_BASE_URL}`;
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-const productSelector = document.querySelector('.productSelect');
-const tableBody = document.querySelector('.shoppingCart-tableBody');
-const totalPrice = document.getElementById('totalPrice');
-const discardAllBtn = document.querySelector('.discardAllBtn');
-const orderInfoBtn = document.querySelector('.orderInfo-btn');
 let productStore = [];
 let cartsStore = [];
 let totalPriceStore = 0;
@@ -85,13 +80,11 @@ async function addToCarts(productId) {
 
 async function removeFromCarts(cartId) {
   try {
-    const res = await axios.delete(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts/${cartId}`,
-    );
+    const res = await axios.delete(`/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts/${cartId}`);
 
     const { carts, finalTotal } = res.data;
-    renderCarts(carts);
-    renderTotalPrice(finalTotal);
+    cartsStore = carts;
+    totalPriceStore = finalTotal;
   } catch (error) {
     alert(error.response.data.message);
   }
@@ -99,26 +92,25 @@ async function removeFromCarts(cartId) {
 
 async function removeAllFromCarts() {
   try {
-    const res = await axios.delete(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts`,
-    );
+    const res = await axios.delete(`/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts`);
 
     const { carts, finalTotal } = res.data;
-    renderCarts(carts);
-    renderTotalPrice(finalTotal);
+
+    cartsStore = carts;
+    totalPriceStore = finalTotal;
   } catch (error) {
     alert(error.response.data.message);
   }
 }
 
-function renderCarts(carts) {
-  let contents = '';
+const tableBody = document.querySelector('.shoppingCart-tableBody');
 
-  if (carts.length === 0) {
-    contents = '目前購物車沒有商品';
-  } else {
-    carts.forEach(item => {
-      contents += `<tr>
+function renderCarts(carts) {
+  const contents =
+    carts.length === 0
+      ? '目前購物車沒有商品'
+      : carts.map(
+          item => `<tr>
                      <td>
                        <div class="cardItem-title">
                          <img src="${item.product.images}" alt="" />
@@ -131,12 +123,13 @@ function renderCarts(carts) {
                      <td class="discardBtn">
                        <a href="#" class="material-icons" data-cart-id="${item.id}"> clear </a>
                      </td>
-                   </tr>`;
-    });
-  }
+                   </tr>`,
+        );
 
   tableBody.innerHTML = contents;
 }
+
+const totalPrice = document.getElementById('totalPrice');
 
 function renderTotalPrice(price) {
   totalPrice.textContent = formatedPrice(price);
@@ -169,6 +162,8 @@ function showErrorMessages(errors) {
     }
   });
 }
+
+const orderInfoBtn = document.querySelector('.orderInfo-btn');
 
 orderInfoBtn.addEventListener('click', async e => {
   e.preventDefault();
@@ -210,7 +205,7 @@ orderInfoBtn.addEventListener('click', async e => {
 
   try {
     await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/orders`,
+      `/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/orders`,
       {
         data: {
           user: userInfo,
@@ -236,6 +231,9 @@ orderInfoBtn.addEventListener('click', async e => {
     alert(error.response.data.message);
   }
 });
+
+const productSelector = document.querySelector('.productSelect');
+const discardAllBtn = document.querySelector('.discardAllBtn');
 
 async function init() {
   await getProductList();
@@ -274,11 +272,15 @@ async function init() {
 
     e.preventDefault();
     await removeFromCarts(e.target.dataset.cartId);
+    renderCarts(cartsStore);
+    renderTotalPrice(totalPriceStore);
   });
 
   discardAllBtn.addEventListener('click', async e => {
     e.preventDefault();
     await removeAllFromCarts();
+    renderCarts(cartsStore);
+    renderTotalPrice(totalPriceStore);
   });
 }
 
