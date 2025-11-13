@@ -242,6 +242,8 @@ const discardAllBtn = document.querySelector('.discardAllBtn');
 
 async function init() {
   await getProductList();
+  await getCarts();
+  updateCartView();
 
   productList.addEventListener('click', async e => {
     if (!e.target.dataset.id) {
@@ -259,10 +261,6 @@ async function init() {
 
     renderProductList(filteredProducts);
   });
-
-  await getCarts();
-
-  updateCartView();
 
   tableBody.addEventListener('click', async e => {
     if (!e.target.dataset.cartId) {
