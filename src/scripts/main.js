@@ -250,8 +250,7 @@ async function init() {
 
     e.preventDefault();
     await addToCarts(e.target.dataset.id);
-    renderCarts(cartsStore);
-    renderTotalPrice(totalPriceStore);
+    updateCartView();
   });
 
   productFilter.addEventListener('change', e => {
@@ -267,8 +266,7 @@ async function init() {
 
   await getCarts();
 
-  renderCarts(cartsStore);
-  renderTotalPrice(totalPriceStore);
+  updateCartView();
 
   tableBody.addEventListener('click', async e => {
     if (!e.target.dataset.cartId) {
@@ -277,15 +275,13 @@ async function init() {
 
     e.preventDefault();
     await removeFromCarts(e.target.dataset.cartId);
-    renderCarts(cartsStore);
-    renderTotalPrice(totalPriceStore);
+    updateCartView();
   });
 
   discardAllBtn.addEventListener('click', async e => {
     e.preventDefault();
     await removeAllFromCarts();
-    renderCarts(cartsStore);
-    renderTotalPrice(totalPriceStore);
+    updateCartView();
   });
 }
 
