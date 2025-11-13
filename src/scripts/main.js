@@ -135,6 +135,11 @@ function renderTotalPrice(price) {
   totalPrice.textContent = formatedPrice(price);
 }
 
+function updateCartView() {
+  renderCarts(cartsStore);
+  renderTotalPrice(totalPriceStore);
+}
+
 const schema = z.object({
   name: z.string().trim().min(1, { error: '必填' }),
   tel: z.string().refine(val => /^\d{2}-\d{8}$/.test(val), {
