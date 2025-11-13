@@ -13,6 +13,7 @@ const discardAllBtn = document.querySelector('.discardAllBtn');
 const orderInfoBtn = document.querySelector('.orderInfo-btn');
 let productStore = [];
 let cartsStore = [];
+let totalPriceStore = 0;
 
 const productList = document.querySelector('.productWrap');
 
@@ -48,18 +49,13 @@ function renderProductList(products) {
 
 async function getCarts() {
   try {
-    const res = await axios.get(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts`,
-    );
+    const res = await axios.get(`/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts`);
 
     const { carts, finalTotal } = res.data;
     cartsStore = carts;
-    renderCarts(cartsStore);
-    renderTotalPrice(finalTotal);
+    totalPriceStore = finalTotal;
   } catch (error) {
-    console.log(error);
     alert(error.response.data.message);
-    return;
   }
 }
 
@@ -72,27 +68,17 @@ async function addToCarts(productId) {
       }
     });
 
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts`,
-      {
-        data: {
-          productId,
-          quantity,
-        },
+    const res = await axios.post(`/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/carts`, {
+      data: {
+        productId,
+        quantity,
       },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
+    });
 
     const { carts, finalTotal } = res.data;
-    cartsStore = res.data.carts;
-    renderCarts(carts);
-    renderTotalPrice(finalTotal);
+    cartsStore = carts;
+    totalPriceStore = finalTotal;
   } catch (error) {
-    console.log(error);
     alert(error.response.data.message);
   }
 }
@@ -261,6 +247,8 @@ async function init() {
 
     e.preventDefault();
     await addToCarts(e.target.dataset.id);
+    renderCarts(cartsStore);
+    renderTotalPrice(totalPriceStore);
   });
 
   productSelector.addEventListener('change', e => {
@@ -275,6 +263,9 @@ async function init() {
   });
 
   await getCarts();
+
+  renderCarts(cartsStore);
+  renderTotalPrice(totalPriceStore);
 
   tableBody.addEventListener('click', async e => {
     if (!e.target.dataset.cartId) {
