@@ -255,11 +255,7 @@ async function init() {
 
   productFilter.addEventListener('change', e => {
     const category = e.target.value;
-
-    const filteredProducts = productStore.filter(p => {
-      if (category === '全部') return productStore;
-      return p.category === category;
-    });
+    const filteredProducts = category === '全部' ? productStore : productStore.filter(p => p.category === category);
 
     renderProductList(filteredProducts);
   });
