@@ -3,7 +3,9 @@ import * as z from 'zod';
 import '../styles/main.css';
 import { formatedPrice } from './utils/helpers';
 
-const productList = document.querySelector('.productWrap');
+axios.defaults.baseURL = `${import.meta.env.VITE_API_BASE_URL}`;
+axios.defaults.headers.post['Content-Type'] = 'application/json';
+
 const productSelector = document.querySelector('.productSelect');
 const tableBody = document.querySelector('.shoppingCart-tableBody');
 const totalPrice = document.getElementById('totalPrice');
@@ -12,67 +14,24 @@ const orderInfoBtn = document.querySelector('.orderInfo-btn');
 let productStore = [];
 let cartsStore = [];
 
-async function init() {
-  await getProductList();
-
-  productList.addEventListener('click', async e => {
-    if (!e.target.dataset.id) {
-      return;
-    }
-
-    e.preventDefault();
-    await addToCarts(e.target.dataset.id);
-  });
-
-  productSelector.addEventListener('change', e => {
-    const category = e.target.value;
-
-    const filteredProducts = productStore.filter(p => {
-      if (category === '全部') return productStore;
-      return p.category === category;
-    });
-
-    renderProductList(filteredProducts);
-  });
-
-  await getCarts();
-
-  tableBody.addEventListener('click', async e => {
-    if (!e.target.dataset.cartId) {
-      return;
-    }
-
-    e.preventDefault();
-    await removeFromCarts(e.target.dataset.cartId);
-  });
-
-  discardAllBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    await removeAllFromCarts();
-  });
-}
-
-await init();
+const productList = document.querySelector('.productWrap');
 
 async function getProductList() {
   try {
-    const res = await axios.get(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/products`,
-    );
+    const res = await axios.get(`/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/products`);
 
     productStore = res.data.products;
     renderProductList(productStore);
   } catch (error) {
     console.log(error);
-    alert(error.response);
-    return;
+    alert(error.response.data.message);
   }
 }
 
 function renderProductList(products) {
-  let contents = '';
-  products.forEach(p => {
-    contents += `<li class="productCard">
+  productList.innerHTML = products
+    .map(
+      p => `<li class="productCard">
                    <h4 class="productType">新品</h4>
                    <img
                      src="${p.images}"
@@ -82,10 +41,9 @@ function renderProductList(products) {
                    <h3>${p.title}</h3>
                    <del class="originPrice">NT${formatedPrice(p.origin_price)}</del>
                    <p class="nowPrice">NT${formatedPrice(p.price)}</p>
-                 </li>`;
-  });
-
-  productList.innerHTML = contents;
+                 </li>`,
+    )
+    .join('');
 }
 
 async function getCarts() {
@@ -292,3 +250,45 @@ orderInfoBtn.addEventListener('click', async e => {
     alert(error.response.data.message);
   }
 });
+
+async function init() {
+  await getProductList();
+
+  productList.addEventListener('click', async e => {
+    if (!e.target.dataset.id) {
+      return;
+    }
+
+    e.preventDefault();
+    await addToCarts(e.target.dataset.id);
+  });
+
+  productSelector.addEventListener('change', e => {
+    const category = e.target.value;
+
+    const filteredProducts = productStore.filter(p => {
+      if (category === '全部') return productStore;
+      return p.category === category;
+    });
+
+    renderProductList(filteredProducts);
+  });
+
+  await getCarts();
+
+  tableBody.addEventListener('click', async e => {
+    if (!e.target.dataset.cartId) {
+      return;
+    }
+
+    e.preventDefault();
+    await removeFromCarts(e.target.dataset.cartId);
+  });
+
+  discardAllBtn.addEventListener('click', async e => {
+    e.preventDefault();
+    await removeAllFromCarts();
+  });
+}
+
+await init();
