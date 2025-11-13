@@ -232,7 +232,7 @@ orderInfoBtn.addEventListener('click', async e => {
   }
 });
 
-const productSelector = document.querySelector('.productSelect');
+const productFilter = document.querySelector('.productSelect');
 const discardAllBtn = document.querySelector('.discardAllBtn');
 
 async function init() {
@@ -249,7 +249,7 @@ async function init() {
     renderTotalPrice(totalPriceStore);
   });
 
-  productSelector.addEventListener('change', e => {
+  productFilter.addEventListener('change', e => {
     const category = e.target.value;
 
     const filteredProducts = productStore.filter(p => {
