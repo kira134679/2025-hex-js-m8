@@ -140,16 +140,6 @@ function updateCartView() {
   renderTotalPrice(totalPriceStore);
 }
 
-const schema = z.object({
-  name: z.string().trim().min(1, { error: '必填' }),
-  tel: z.string().refine(val => /^\d{2}-\d{8}$/.test(val), {
-    message: '電話格式錯誤',
-  }),
-  email: z.email({ error: 'Email格式錯誤' }).trim(),
-  address: z.string().trim().min(1, { error: '必填' }),
-  payment: z.literal(['ATM', '信用卡', '超商付款']),
-});
-
 // 清除錯誤訊息
 function clearErrorMessages() {
   const errorMessages = document.querySelectorAll('.orderInfo-message');
@@ -168,6 +158,17 @@ function showErrorMessages(errors) {
   });
 }
 
+const schema = z.object({
+  name: z.string().trim().min(1, { error: '必填' }),
+  tel: z.string().refine(val => /^\d{2}-\d{8}$/.test(val), {
+    message: '電話格式錯誤',
+  }),
+  email: z.email({ error: 'Email格式錯誤' }).trim(),
+  address: z.string().trim().min(1, { error: '必填' }),
+  payment: z.literal(['ATM', '信用卡', '超商付款'], { error: '未預期的錯誤' }),
+});
+
+const form = document.querySelector('.orderInfo-form');
 const orderInfoBtn = document.querySelector('.orderInfo-btn');
 
 orderInfoBtn.addEventListener('click', async e => {
@@ -185,18 +186,18 @@ orderInfoBtn.addEventListener('click', async e => {
   const customerPhone = document.getElementById('customerPhone').value;
   const customerEmail = document.getElementById('customerEmail').value;
   const customerAddress = document.getElementById('customerAddress').value;
-  const tradeWay = document.getElementById('tradeWay').value;
+  const payment = document.getElementById('tradeWay').value;
 
-  const userInfo = {
+  const orderInfo = {
     name: customerName,
     tel: customerPhone,
     email: customerEmail,
     address: customerAddress,
-    payment: tradeWay,
+    payment: payment,
   };
 
   try {
-    schema.parse(userInfo);
+    schema.parse(orderInfo);
   } catch (error) {
     if (error instanceof z.ZodError) {
       showErrorMessages(error.issues);
@@ -213,7 +214,7 @@ orderInfoBtn.addEventListener('click', async e => {
       `/api/livejs/v1/customer/${import.meta.env.VITE_API_PATH}/orders`,
       {
         data: {
-          user: userInfo,
+          user: orderInfo,
         },
       },
       {
@@ -223,11 +224,7 @@ orderInfoBtn.addEventListener('click', async e => {
       },
     );
 
-    document.getElementById('customerName').value = '';
-    document.getElementById('customerPhone').value = '';
-    document.getElementById('customerEmail').value = '';
-    document.getElementById('customerAddress').value = '';
-    document.getElementById('tradeWay').value = 'ATM';
+    form.reset();
 
     cartsStore = [];
     renderCarts(cartsStore);
