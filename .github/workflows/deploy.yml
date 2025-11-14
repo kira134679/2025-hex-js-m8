@@ -1,0 +1,58 @@
+name: deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+
+# GitHub Pages 需要的權限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時間只跑一個部署
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v5
+
+      - name: install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - name: install dependencies
+        run: pnpm install
+
+      - name: build
+        run: pnpm build
+
+      - name: upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
