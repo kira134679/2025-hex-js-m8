@@ -11,49 +11,6 @@ const discardAllBtn = document.querySelector('.discardAllBtn');
 let orderData = [];
 let share = [];
 
-await init();
-
-async function init() {
-  await getOrderList();
-  renderOrderList(orderData);
-  share = getRevenueShare();
-  renderChart(share);
-
-  orderTableBody.addEventListener('click', async e => {
-    e.preventDefault();
-    const target = e.target;
-    const className = target.getAttribute('class');
-    if (className === 'orderStatus-Btn') {
-      const { id, status } = target.dataset;
-
-      const newStatus = !(status === 'true');
-
-      await changeOrderStatus(id, newStatus);
-      renderOrderList(orderData);
-      return;
-    }
-
-    if (className === 'delSingleOrder-Btn') {
-      const { id } = target.dataset;
-      await deleteOrder(id);
-      renderOrderList(orderData);
-      share = getRevenueShare();
-      renderChart(share);
-      return;
-    }
-
-    return;
-  });
-
-  discardAllBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    await deleteAllOrders();
-    renderOrderList(orderData);
-    share = getRevenueShare();
-    renderChart(share);
-  });
-}
-
 async function getOrderList() {
   try {
     const res = await axios.get(`/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`);
@@ -66,16 +23,15 @@ async function getOrderList() {
 }
 
 function renderOrderList(orders) {
-  let contents = '';
-  if (orders.length === 0) {
-    contents = '目前沒有訂單';
-  } else {
-    contents = orders
-      .map(order => {
-        const { products } = order;
-        const productContents = products.map(p => `<p>${p.title} x ${p.quantity}</p>`).join('');
+  orderTableBody.innerHTML =
+    orders.length === 0
+      ? '目前沒有訂單'
+      : orders
+          .map(order => {
+            const { products } = order;
+            const productContents = products.map(p => `<p>${p.title} x ${p.quantity}</p>`).join('');
 
-        return `<tr>
+            return `<tr>
               <td>${order.id}</td>
               <td>
                 <p>${order.user.name}</p>
@@ -92,11 +48,8 @@ function renderOrderList(orders) {
                 <input type="button" class="delSingleOrder-Btn" value="刪除" data-id="${order.id}" />
               </td>
             </tr>`;
-      })
-      .join('');
-  }
-
-  orderTableBody.innerHTML = contents;
+          })
+          .join('');
 }
 
 async function changeOrderStatus(orderId, orderStatus) {
@@ -182,3 +135,47 @@ function renderChart(data) {
 
   c3.generate(chartData);
 }
+
+function updateDashboardView(orderData) {
+  renderOrderList(orderData);
+  share = getRevenueShare();
+  renderChart(share);
+}
+
+async function init() {
+  await getOrderList();
+  updateDashboardView(orderData);
+
+  orderTableBody.addEventListener('click', async e => {
+    e.preventDefault();
+    const target = e.target;
+    const className = target.getAttribute('class');
+
+    if (className === 'orderStatus-Btn') {
+      const { id, status } = target.dataset;
+
+      const newStatus = !(status === 'true');
+
+      await changeOrderStatus(id, newStatus);
+      renderOrderList(orderData);
+      return;
+    }
+
+    if (className === 'delSingleOrder-Btn') {
+      const { id } = target.dataset;
+      await deleteOrder(id);
+      updateDashboardView(orderData);
+      return;
+    }
+
+    return;
+  });
+
+  discardAllBtn.addEventListener('click', async e => {
+    e.preventDefault();
+    await deleteAllOrders();
+    updateDashboardView(orderData);
+  });
+}
+
+await init();
