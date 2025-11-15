@@ -2,6 +2,10 @@ import axios from 'axios';
 import { timestampToDate } from './utils/helpers';
 import '../styles/admin.css';
 
+axios.defaults.baseURL = `${import.meta.env.VITE_API_BASE_URL}`;
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+axios.defaults.headers.common.Authorization = import.meta.env.VITE_TOKEN;
+
 const orderTableBody = document.querySelector('.orderPage-tableBody');
 const discardAllBtn = document.querySelector('.discardAllBtn');
 let orderData = [];
@@ -52,15 +56,7 @@ async function init() {
 
 async function getOrderList() {
   try {
-    const res = await axios.get(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: import.meta.env.VITE_TOKEN,
-        },
-      },
-    );
+    const res = await axios.get(`/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`);
 
     const { orders } = res.data;
     orderData = orders;
@@ -105,21 +101,12 @@ function renderOrderList(orders) {
 
 async function changeOrderStatus(orderId, orderStatus) {
   try {
-    const res = await axios.put(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`,
-      {
-        data: {
-          id: orderId,
-          paid: orderStatus,
-        },
+    const res = await axios.put(`/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`, {
+      data: {
+        id: orderId,
+        paid: orderStatus,
       },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: import.meta.env.VITE_TOKEN,
-        },
-      },
-    );
+    });
 
     const { orders } = res.data;
     orderData = orders;
@@ -130,15 +117,7 @@ async function changeOrderStatus(orderId, orderStatus) {
 
 async function deleteOrder(orderId) {
   try {
-    const res = await axios.delete(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders/${orderId}`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: import.meta.env.VITE_TOKEN,
-        },
-      },
-    );
+    const res = await axios.delete(`/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders/${orderId}`);
 
     const { orders } = res.data;
     orderData = orders;
@@ -149,15 +128,7 @@ async function deleteOrder(orderId) {
 
 async function deleteAllOrders() {
   try {
-    const res = await axios.delete(
-      `${import.meta.env.VITE_API_BASE_URL}/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: import.meta.env.VITE_TOKEN,
-        },
-      },
-    );
+    const res = await axios.delete(`/api/livejs/v1/admin/${import.meta.env.VITE_API_PATH}/orders`);
 
     const { orders } = res.data;
     orderData = orders;
