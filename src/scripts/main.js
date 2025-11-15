@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as z from 'zod';
 import '../styles/main.css';
+import '../scripts/effect-main';
 import { formatedPrice } from './utils/helpers';
 
 axios.defaults.baseURL = `${import.meta.env.VITE_API_BASE_URL}`;

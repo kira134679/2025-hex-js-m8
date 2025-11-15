@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { timestampToDate } from './utils/helpers';
 import '../styles/admin.css';
+import '../scripts/effect-admin';
 
 axios.defaults.baseURL = `${import.meta.env.VITE_API_BASE_URL}`;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
